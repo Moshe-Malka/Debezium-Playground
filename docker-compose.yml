@@ -9,7 +9,13 @@ services:
     image: quay.io/debezium/kafka:${DEBEZIUM_VERSION}
     ports:
       - 9092:9092
-    links:
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+      start_period: 15s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    depends_on:
       - zookeeper
     environment:
       - ZOOKEEPER_CONNECT=zookeeper:2181
@@ -17,6 +23,12 @@ services:
     image: quay.io/debezium/example-mysql:${DEBEZIUM_VERSION}
     ports:
      - 3306:3306
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      start_period: 5s
+      interval: 5s
+      timeout: 2s
+      retries: 5
     environment:
      - MYSQL_ROOT_PASSWORD=debezium
      - MYSQL_USER=mysqluser
@@ -30,9 +42,11 @@ services:
     ports:
      - 8083:8083
      - 5005:5005
-    links:
-     - kafka
-     - mysql
+    depends_on:
+      kafka:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
     environment:
      - BOOTSTRAP_SERVERS=kafka:9092
      - GROUP_ID=1

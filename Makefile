@@ -7,3 +7,9 @@ install-precommit:
 
 install:
 	poetry install
+
+up:
+	docker compose up -d --wait
+
+down:
+	docker compose down --volumes --remove-orphans
