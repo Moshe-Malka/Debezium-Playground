@@ -4,3 +4,6 @@ validate:
 
 install-precommit:
 	pre-commit install
+
+install:
+	poetry install
